@@ -1,0 +1,49 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<opml version="2.0">
+  <body>
+    <outline xmlUrl="http://rss.acast.com/themagnusarchives" autodownload="1" cachelimit="30" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rss/pod/22209" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://audioboom.com/channels/5101646.rss" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="https://feeds.megaphone.fm/IMP5763348627" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="http://feeds.soundcloud.com/users/soundcloud:users:218917454/sounds.rss" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="http://feeds.soundcloud.com/users/soundcloud:users:167287536/sounds.rss" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rss/pod/3963" autodownload="0" cachelimit="2" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rssfeed/rssfeed.aspx?Poddfeed=3966" autodownload="0" cachelimit="5" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rssfeed/rssfeed.aspx?Poddfeed=4013" autodownload="0" cachelimit="5" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rssfeed/rssfeed.aspx?Poddfeed=3951" autodownload="1" cachelimit="5" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rss/pod/22712" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rss/pod/22793" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="http://api.sr.se/api/rss/pod/23791" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="http://podcasts.files.bbci.co.uk/b00snr0w.rss" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/26068" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="http://rss.acast.com/alltduvelatveta" autodownload="1" cachelimit="1" notify="0" />
+    <outline xmlUrl="http://podcasts.files.bbci.co.uk/p02nrss1.rss" autodownload="1" cachelimit="1" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/15382" autodownload="0" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/33605" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/4017" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://feeds.captivate.fm/nya-pengar-och-politik/" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/3953" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/33725" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://rss.acast.com/scp-archives" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/3967" autodownload="1" cachelimit="5" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/34530" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://rss.acast.com/fraga-anders-och-mans" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/3795" autodownload="1" cachelimit="1" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/3794" autodownload="1" cachelimit="1" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/itunes/4896" autodownload="0" cachelimit="5" notify="0" />
+    <outline xmlUrl="http://access.acast.com/rss/62713b2fba62b7001272b4f9/Wu2eR3xl?id=https%253A%252F%252Faccess.acast.com%252Frss%252F62713b2fba62b7001272b4f9%252FWu2eR3xl&amp;source=subscribe&amp;action=podkicker" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/41978" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/4890" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/4020" autodownload="1" cachelimit="50" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/33675" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/37282" autodownload="0" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/4016" autodownload="1" cachelimit="10" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/34795" autodownload="1" cachelimit="2" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/46690" autodownload="1" cachelimit="30" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/36999" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/37094" autodownload="1" cachelimit="1" notify="0" />
+    <outline xmlUrl="https://api.sr.se/api/rss/pod/6230" autodownload="1" cachelimit="50" notify="0" />
+    <outline xmlUrl="https://podcasts.files.bbci.co.uk/m0026mrl.rss" autodownload="1" cachelimit="0" notify="0" />
+    <outline xmlUrl="https://podcasts.files.bbci.co.uk/b07dx75g.rss" autodownload="1" cachelimit="0" notify="0" />
+  </body>
+</opml>

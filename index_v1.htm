@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Spellista</title>
+    <style>
+        * {
+          background-color: #111;
+          color: #bbb;
+          user-select: none;
+        }
+        div {display:flex;float:left;}
+        body { font-family: Arial, sans-serif; }
+        ul { list-style: none; padding: 0; }
+        
+        li > div { 
+          padding: 5px; 
+          font-size: .8em;
+        }
+        li { 
+          border-bottom: 3px solid #aaa; 
+        }
+        audio {
+          color-scheme: dark;
+        }
+        li[data-deleted="true"]{
+          display: none;
+          visibility: hidden;
+        }
+        li[data-playing="true"] div{
+          background-color: rgba(187,187,187,1);
+          color: #111;
+        }
+        select, button, label, input {
+          font-size: 1.1em;
+        }
+        .fullwidth {
+          width: 100%;
+        }
+        .halfwidth {
+          width: 49%;
+        }
+        .thirdwidth {
+          width: 32%;
+        }
+        .quarterwidth {
+          width: 24.5%;
+        }
+        .controls {
+          width: 24%;
+        }
+        #plHolder {
+          overflow: auto;
+          width: 100%;
+        }
+        .bigtext{
+          font-size:1.7em;
+          justify-content: center;
+          text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="h1">Podcast Spellista</h1>
+    <audio id="audioPlayer" controls style="width: 100%; margin-bottom: 10px;"></audio></audio>
+    <button id="goPrev" class="controls" onclick="go(-1)">prev</button>
+    <button id="skipPrev" class="controls" onclick="skip(-1)">skip</button>
+    <button id="skipNext" class="controls" onclick="skip(1)">skip</button>
+    <button id="goNext" class="controls" onclick="go(1)">next</button>
+    <div class="halfwidth">
+      <label for="sort">Sortera:</label>
+    </div>
+    <div class="halfwidth">
+      <label for="sleep">Insomningstimer:</label>
+    </div>
+    <select id="sort" class="halfwidth"></select>
+    <select id="sleep" class="halfwidth"></select>
+    <br/>
+    <button class="thirdwidth" onclick="resetAll()">reset</button>
+    <button class="thirdwidth" onclick="refreshPodcasts()">uppdatera</button>
+    <button class="thirdwidth" onclick="downloadAll()">ladda ner</button>
+    <br/>
+    <label for="feedlist">Feeds:</label>
+    <br/>
+    <select id="feedlist" class="fullwidth"></select>
+    <br/>
+    <div id="plHolder">
+      <ul id="playlist" class="fullwidth"></ul>
+    </div>
+    <script>
+        function s(e){alert(JSON.stringify(e))}
+        window.onerror = (e)=>s(e)
+        function prevDef(ev){ev.preventDefault()}
+        window.touchmove=prevDef
+        let cntLoading=0
+        let playingIndex = gi("playingIndex")||-1
+        let playingItem = gi("playingItem");
+        let feedlist = gi("feedlist")||[]
+        let playlist = gi("playlist")||[]
+        let deletedList = gi("deletedList")||[]
+        let baseUrl = "https://pod.hagser.se/"
+        const downloadAll=()=>{
+          const savedIndex = gi("feedIndex")
+          if(savedIndex>-1){
+            const downloadlist = playlist.map(itm=>itm.audio)
+            downloadlist.forEach((link,idx)=>{
+              const ifr = document.createElement("iframe")
+              ifr.id="ifr"+idx
+              ifr.name="ifr"+idx
+              const a = document.createElement("a")
+              a.href=link
+              a.target="ifr"+idx
+              a.setAttribute("download","music")
+              a.click()
+            })
+          }
+        }
+        const $ = (elid) => {
+          return document.getElementById(elid)
+        }
+        const h1 = $("h1");
+        const showLoading = ()=>{
+          const h1Text="Podcast Spellista"
+          if(cntLoading!=0){
+            h1.textContent=h1Text+" "+cntLoading
+          } else {
+            h1.textContent=h1Text
+          }
+        }
+        let intId=-1;
+        const feedlistEl = $("feedlist");
+        const playlistEl = $("playlist");
+        const plHolder = $("plHolder");
+        const sort = $("sort"); 
+        const player = $("audioPlayer");
+        const sleep = $('sleep')
+        
+        const dAplaying = "data-playing"
+        const dAdeleted = "data-deleted"
+        player.playbackRate = gi("playbackRate")??1
+        
+        Array.prototype.count=fltr=>{
+          return this.filter(fltr).length
+        }
+        function lu(){
+          if(cntLoading==0){
+            intId=setInterval(showLoading,200)
+          }
+          cntLoading++
+        }
+        function ld(){
+          cntLoading--
+          if(cntLoading==0){
+            clearInterval(intId)
+            showLoading()
+          }
+        }
+        function resetAll(){
+          lu()
+          const itemsToDelete="feedlist;playlist;playingIndex;playingItem;playbackRate".split(";")
+          itemsToDelete.forEach((itm) =>
+            localStorage.removeItem(itm)
+          )
+          fetchPodcasts()
+          ld()
+        }
+        
+        function refreshPodcasts(){
+          lu()
+          playingIndex = -1
+          playingItem = null
+          playlist = []
+          feedlist.forEach((feed, index) => {
+            feed.refreshFeed()
+          });
+          ld()
+          sortPlaylist()
+        }
+        function skip(direction){
+          player.currentTime+=(direction*20)
+        }
+        function go(direction){
+          playAudio(playingIndex+direction)
+        } 
+        function si(name,value){
+          localStorage.setItem(name,JSON.stringify(value))
+        }
+        function gi(name){
+          const item = localStorage.getItem(name)
+          if(item){
+            try{
+              return JSON.parse(item)
+            }
+            catch{}
+          }
+          return item
+        }
+        
+        function adjustPlaylistHeight(){
+          const height = window.top.innerHeight-277
+          if(height>0)
+            plHolder.style.height=height+"px"
+        }
+        window.onresize = adjustPlaylistHeight
+        function isDeleted(itm){
+          return deletedList.filter((ditm)=>{
+            return ditm.audio==itm.audio
+          }).length>0
+        }
+        function getDurPer(itm) {
+          try{
+            if(itm && itm.currentTime && itm.duration && itm.currentTime>0 && itm.duration>0)
+              return Math.round((itm.currentTime/itm.duration)*100)+"%"
+          }
+          catch{}
+          return "&nbsp;"
+        }
+        class Item {
+          constructor (itm){
+            this.title=itm.title
+            this.audio=itm.audio
+            this.date=itm.date
+            this.image=itm.image
+            this.currentTime = gi(itm.audio + "_currentTime") || 0;
+            this.deleted=itm.deleted||isDeleted(this)
+            this.duration=gi(itm.audio + "_duration")||0
+            if(gi("currentSrc")==this.audio){
+              playingItem=this
+            }
+          }
+        }
+        
+        class Feed {
+          constructor (itm){
+            this.url=itm.url;
+            this.limit=5//itm.limit||25;
+            this.image=null;
+            this.title=null;
+            this.list=gi(this.url)||[];
+            this.fetchFeed();
+          }
+          setLastupdates(){
+            si(this.url+"_lastupdated", (new Date()).getTime())
+          }
+          shallUpdate() {
+            const lastupdated = gi(this.url+"_lastupdated")||0
+            const now = (new Date()).getTime()
+            return now-lastupdated>600000
+          }
+          async refreshFeed() {
+            si(this.url,[])
+            await this.fetchFeed()
+          }
+          async fetchFeed() {
+            lu()
+            if(this.list.length<1 || this.shallUpdate()){
+              const response = await fetch(baseUrl+'fetch_feed.php?url='+this.url+'&limit='+this.limit)
+              this.list = await response.json()
+            }
+            si(this.url, this.list)
+            this.list.forEach((itm)=>{
+              if(!itm.deleted)
+                addUnique(new Item(itm))
+              if(this.title == null)
+                this.title = itm.name
+              if(this.image == null)
+                this.image = itm.image
+            })
+            ld()
+            setLastupdates()
+          }
+        }
+        function addUnique(itm){
+          if(playlist.filter((i)=>{return i.audio==itm.audio}).length==0){
+            playlist.push(itm)
+            si("playlist", playlist)
+          }
+        }
+        function removeAttribute(el,attr){
+          if(el && el.hasAttribute(attr))
+            el.removeAttribute(attr)
+        }
+        function setAttribute(el,attr){
+          if(el && !el.hasAttribute(attr))
+            el.setAttribute(attr,"true")
+        }
+        function deleteItem(itm){
+          if(!isDeleted(itm)){
+            deletedList.push(itm)
+            si("deletedList", deletedList)
+            itm.deleted=true
+          }
+        }
+        function updateIndex(){
+          playlist.forEach((itm,index)=>{
+            const tag = playlistEl.children[index]
+            removeAttribute(tag,dAplaying)
+            if(player.currentSrc==itm.audio){
+              setAttribute(tag,dAplaying)
+              playingIndex=index
+              si("playingIndex", playingIndex)
+              playingItem=itm
+              document.title=itm.title
+            }
+          })
+        }
+        player.ontimeupdate=()=>{
+          si(player.currentSrc + "_currentTime", player.currentTime);
+          si(player.currentSrc + "_duration", player.duration);
+          si("currentSrc",player.currentSrc)
+          si("playbackRate",player.playbackRate)
+          updateIndex()
+          const tag = playlistEl.children[playingIndex]
+          if (playingItem) {
+            playingItem.currentTime = player.currentTime;
+            playingItem.duration = player.duration
+            if(tag)
+              tag.innerHTML=getEpisodeContent(playingItem)
+            si("playingItem",playingItem)
+          }
+
+          if(player.currentTime>player.duration-.5){
+            setAttribute(tag,dAdeleted)
+            deleteItem(playingItem)
+            playAudio(playingIndex+1)
+          }
+        }
+        
+        async function fetchPodcasts() {
+          lu()
+          const savedFeedlist = gi("feedlist")
+          
+          let tempFeedlist;
+          if(savedFeedlist && savedFeedlist.length>0){
+            tempFeedlist = savedFeedlist
+          } else {
+            const response = await fetch(baseUrl+'fetch_feeds.php');
+            tempFeedlist = await response.json();
+          }
+          
+          feedlist = tempFeedlist.map((itm)=>
+            new Feed(itm)
+          )
+          si("feedlist",feedlist)
+          ld()
+          displayFeedlist();
+          sortPlaylist()
+          if(playingItem){
+            loadItem(playingItem)
+          }
+        }
+
+        function sortPlaylist() {
+          const sortOption = sort.value;
+          si("sortOption",sortOption)
+          playlist.sort((a, b) => {
+            switch (sortOption) {
+              case "title_asc":
+                return a.title.localeCompare(b.title);
+              case "title_desc":
+                return b.title.localeCompare(a.title);
+              case "date_desc":
+                return b.date - a.date; // Nyaste först
+              case "date_asc":
+                return a.date - b.date; // Äldsta först
+              default:
+                return 0;
+            }
+          });
+          displayPlaylist();
+        }
+        function displaySort() {
+          let ops = {
+            "date_desc":"Nyaste först",
+            "date_asc":"Äldsta först",
+            "title_asc":"Titel (A–Ö)",
+            "title_desc":"Titel (Ö–A)"}
+            sort.onchange=sortPlaylist
+            sort.innerHTML=""
+            Object.keys(ops).forEach((ep) => {
+              const opt = document.createElement("option");
+              opt.text = ops[ep]
+              opt.value = ep
+              opt.selected = (ep == gi("sortOption"))?"selected":""
+              sort.appendChild(opt)
+            });
+        }
+        function displayFeedlist() {
+          lu()
+          const savedIndex = gi("feedIndex")
+          feedlistEl.onchange = (el) => fetchFeedByIndex(feedlistEl.selectedIndex-1);
+          feedlistEl.innerHTML = "<option>alla</option";
+          feedlist.forEach((ep, index) => {
+            const opt = document.createElement("option");
+            opt.text = ep.title
+            opt.value = index
+            opt.selected = (index == savedIndex)?"selected":""
+            feedlistEl.appendChild(opt)
+          });
+          if(savedIndex){
+            fetchFeedByIndex(savedIndex)
+          }
+          ld()
+        }
+        function formatDate(d){
+          let month = '' + (d.getMonth() + 1)
+          let day = '' + d.getDate()
+          let year = d.getFullYear()
+          
+          if (month.length < 2) 
+            month = '0' + month;
+          if (day.length < 2) 
+            day = '0' + day;
+            
+          return year+"-"+month+"-"+day
+        }
+        function getEpisodeContent(ep){
+          let content = "<div class='fullwidth' style='height:60px;border-bottom:solid 1px #ddd;'>"
+          content+="<div class='quarterwidth' style='background: url("+ep.image+") no-repeat; background-size:60px;'>&nbsp;</div>"
+          content+="<div class='halfwidth'>"+ ep.title + "<br/><br/>" + formatDate(new Date(ep.date)) +"</div>"
+          content+="<div class='quarterwidth bigtext'>"
+          content+=getDurPer(ep)
+          content+="</div></div>"
+          return content
+        }
+        function displayPlaylist() {
+          lu()
+          playlistEl.innerHTML = "";
+          playlist.filter((ep)=>!ep.deleted).forEach((ep, index) => {
+            
+              const li = document.createElement("li");
+              li.innerHTML = getEpisodeContent(ep)
+              li.onclick = () => {playAudio(index)}
+              li.oncontextmenu = ()=>{
+                setAttribute(li,dAdeleted)
+                deleteItem(ep)
+              }
+              playlistEl.appendChild(li);
+          });
+          ld()
+          adjustPlaylistHeight()
+        }
+        
+        function fetchFeedByIndex(index) {
+          lu()
+          si("feedIndex",index)
+          if(index>-1) {
+            let itm = feedlist[index]
+            playlist=itm.list;
+          } else {
+            playlist=[]
+            feedlist.forEach((feed)=>{
+              feed.list.forEach((itm)=>{
+                addUnique(new Item(itm))
+              })
+            })
+          }
+          ld()
+          sortPlaylist();
+        }
+        
+        function playAudio(index) {
+          playingIndex = index
+          si("playingIndex",playingIndex)
+          const item = playlist[index];
+          if(item.deleted && index<playlist.length){
+            go(1)
+          }else{
+            playItem(item)
+          }
+        }
+        
+        function playItem(itm){
+          loadItem(itm)
+          player.play()
+        }
+        
+        function loadItem(itm){
+          playingItem=itm
+          si("playingItem",playingItem)
+          player.src=itm.audio
+          player.currentTime=itm.currentTime||0
+          const savedIndex = gi("playingIndex")
+          if(savedIndex){
+            const tag = playlistEl.children[savedIndex]
+            if(tag)
+              tag.scrollIntoView()
+          }
+        }
+        let sleepTimeoutId=-1
+        const stopPlaying=()=>{
+          sleep.selectedIndex=0
+          player.pause()
+        }
+        function displaySleep(){
+          
+          sleep.innerHTML = "<option>av</option>";
+          sleep.onchange=()=>{
+            clearTimeout(sleepTimeoutId)
+            const val = sleep.val
+            if(!val || isNaN(eval(val))){
+              return
+            }
+            sleepTimeoutId=setTimeout(stopPlaying,val)
+          }
+          for(let t=15;t<100;t=t+15){
+            const opt = document.createElement("option");
+            opt.text = t + " min"
+            opt.value = t*60000
+            sleep.appendChild(opt)
+          }
+        }
+        
+        let asdf={}
+        function loggingAspectA(...args) {
+          asdf[this+args]=(asdf[this+args]||0)+1
+        }
+        function loggingAspectB(...args) {
+          asdf[this+args]=(asdf[this+args]||0)+1
+        }
+        window.onload=()=>{
+          lu()
+          displaySort()
+          displaySleep()
+          //resetAll()
+          setTimeout(fetchPodcasts,500)
+          
+          //s(asdf)
+          ld()
+        }
+    </script>
+    <script type="module">
+    //import aop from "./aop.js"
+    //aop.getMethods(localStorage).forEach(m=>{alert(m)})
+    //aop.inject(localStorage,loggingAspectB,"before","methods")
+    //aop.inject(localStorage,loggingAspectA,"after","methods")
+   
+    </script>
+    
+</body>
+</html>

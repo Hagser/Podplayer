@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Spellista</title>
+    <link href="index.css" rel="stylesheet"/>
+    <script src="init.js"></script>
+    <script>
+      window.addEventListener('load', async () => {
+        await fullyLoaded;
+        cl("startRender",new App());
+      });
+    </script>
+</head>
+<body>
+    <h1 id="h1">Podcast Spellista</h1>
+    <audio id="player" preload="auto" controls></audio>
+    <button id="goPrev" class="controls">prev</button>
+    <button id="skipPrev" class="controls">skip</button>
+    <button id="skipNext" class="controls">skip</button>
+    <button id="goNext" class="controls">next</button>
+    <div class="halfwidth">
+      <label for="sort">Sortera:</label>
+    </div>
+    <div class="halfwidth">
+      <label for="sleep">Insomningstimer:</label>
+    </div>
+    <select id="sort" class="halfwidth"></select>
+    <select id="sleep" class="halfwidth"></select>
+    <br/>
+    <button class="halfwidth" onclick="Base.resetAll()">reset</button>
+    <button class="halfwidth" onclick="Base.refreshPodcasts()">uppdatera</button>
+    <br/>
+    <label for="feedlist">Feeds:</label>
+    <br/>
+    <select id="feedlist" class="fullwidth"></select>
+    <br/>
+    <div id="plHolder">
+      <ul id="playlist" class="fullwidth"></ul>
+    </div>
+</body>
+</html>

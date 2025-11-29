@@ -1,0 +1,84 @@
+* {
+  background-color: #111;
+  color: #bbb;
+  user-select: none;
+  text-overflow: ellipsis;
+}
+div {
+  display: flex;
+  float: left;
+}
+body {
+  font-family: Arial, sans-serif;
+}
+ul {
+  list-style: none;
+  padding: 0;
+}
+li > div {
+  padding: 5px;
+  font-size: .8em;
+}
+li {
+  border-bottom: 3px solid #aaa;
+}
+audio {
+  color-scheme: dark;
+  width: 100%; 
+  margin-bottom: 10px;
+}
+li[data-deleted="true"] {
+  display: none;
+  visibility: hidden;
+  background-color: #111;
+  color: #222;
+}
+li[data-played="true"] div {
+  background-color: #777;
+  color: #222;
+}
+li[data-playing="true"] div {
+  background-color: #aaa;
+  color: #111;
+}
+.item {
+  height:60px;
+  border-bottom:solid 1px #ddd;
+}
+.deleteItem{
+  background-color: #a00;
+  color: #bbb;
+  z-index: 9999;
+}
+.addToList{
+  background-color: #0a0;
+  color: #111;
+  z-index: 9999;
+}
+select, button, label, input {
+  font-size: 1.1em;
+}
+.fullwidth {
+  width: 100%;
+}
+.halfwidth {
+  width: 49%;
+}
+.thirdwidth {
+  width: 32%;
+}
+.quarterwidth {
+  width: 24.5%;
+}
+.controls {
+  width: 24%;
+}
+#plHolder {
+  overflow: auto;
+  width: 100%;
+}
+.bigtext {
+  font-size: 1.7em;
+  justify-content: center;
+  text-align: center;
+}

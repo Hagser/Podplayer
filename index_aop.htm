@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Spellista</title>
+    <link href="index.css" rel="stylesheet"></link>
+</head>
+<body>
+    <h1 id="h1">Podcast Spellista</h1>
+    <audio id="audioPlayer" controls style="width: 100%; margin-bottom: 10px;"></audio>
+    <button id="goPrev" class="controls" onclick="go(-1)">prev</button>
+    <button id="skipPrev" class="controls" onclick="skip(-1)">skip</button>
+    <button id="skipNext" class="controls" onclick="skip(1)">skip</button>
+    <button id="goNext" class="controls" onclick="go(1)">next</button>
+    <div class="halfwidth">
+      <label for="sort">Sortera:</label>
+    </div>
+    <div class="halfwidth">
+      <label for="sleep">Insomningstimer:</label>
+    </div>
+    <select id="sort" class="halfwidth"></select>
+    <select id="sleep" class="halfwidth"></select>
+    <br/>
+    <button class="thirdwidth" onclick="resetAll()">reset</button>
+    <button class="thirdwidth" onclick="refreshPodcasts()">uppdatera</button>
+    <button class="thirdwidth" onclick="downloadAll()">ladda ner</button>
+    <br/>
+    <label for="feedlist">Feeds:</label>
+    <br/>
+    <select id="feedlist" class="fullwidth"></select>
+    <br/>
+    <div id="plHolder">
+      <ul id="playlist" class="fullwidth"></ul>
+    </div>
+    <script>
+      function cl(...e){
+        console.log(e)
+      }
+      function s(e){alert(JSON.stringify(e))}
+      window.onerror = (e)=>s(e)
+      function aspectPlaylist(...args){
+          cl(this)
+      }
+      function prevDef(ev){ev.preventDefault()}
+      window.touchmove=prevDef
+    </script>
+    <script src="base.js"></script>
+    <script src="playlist.js"></script>
+    <script src="item.js"></script>
+    <script src="feed.js"></script>
+    <script>
+        const base = new Base()
+        let playingIndex = base.gi("playingIndex")||-1
+        let playingItem = base.gi("playingItem")
+        let feedlist = base.gi("feedlist")||[]
+        let playlist = new Playlist()
+        
+        window.addEventListener("localStorageChanged", (e) => {
+          const { key } = e.detail
+          
+          if (key === "playlist") {
+            sortPlaylistTimed()
+          }
+        })
+        window.addEventListener("feedUpdated", (e) => {
+          //cl("feedUpdated",e.detail)
+        })
+        let sortPlaylistTimerId=-1
+        function sortPlaylistTimed(){
+          clearTimeout(sortPlaylistTimerId)
+          sortPlaylistTimerId=setTimeout(sortPlaylist,500)
+        }
+        const downloadAll=()=>{
+          const savedIndex = base.gi("feedIndex")
+          if(savedIndex>-1){
+            const downloadlist = playlist.map(itm=>itm.audio)
+            downloadlist.forEach((link,idx)=>{
+              const ifr = document.createElement("iframe")
+              ifr.id="ifr"+idx
+              ifr.name="ifr"+idx
+              const a = document.createElement("a")
+              a.href=link
+              a.target="ifr"+idx
+              a.setAttribute("download","music")
+              a.click()
+            })
+          }
+        }
+        const $ = (elid) => {
+          return document.getElementById(elid)
+        }
+        const h1 = $("h1");
+        
+        const feedlistEl = $("feedlist");
+        const playlistEl = $("playlist");
+        const plHolder = $("plHolder");
+        const sort = $("sort"); 
+        const player = $("audioPlayer");
+        const sleep = $('sleep')
+        
+        const dAplaying = "data-playing"
+        const dAdeleted = "data-deleted"
+        player.playbackRate = base.gi("playbackRate")??1
+        
+        function resetAll(){
+          
+          const itemsToDelete="feedlist;playlist;playingIndex;playingItem;playbackRate".split(";")
+          itemsToDelete.forEach((itm) => {
+            localStorage.removeItem(itm)
+          })
+          fetchPodcasts()
+        }
+        
+        function refreshPodcasts(){
+        
+          playingIndex = -1
+          playingItem = null
+          playlist.clear()
+          const savedIndex = base.gi("feedIndex")
+          
+          feedlist.filter((feed,index)=>{return savedIndex==-1||savedIndex==index}).forEach((feed, index) => {
+            feed.refreshFeed()
+          })
+          base.si("feedlist",feedlist)
+          fetchFeedByIndex(savedIndex)
+          sortPlaylistTimed()
+        }
+        function skip(direction){
+          player.currentTime+=(direction*20)
+        }
+        function go(direction){
+          playAudio(playingIndex+direction)
+        } 
+        
+        function adjustPlaylistHeight(){
+          const height = window.top.innerHeight-277
+          if(height>0)
+            plHolder.style.height=height+"px"
+        }
+        window.onresize = adjustPlaylistHeight
+        
+        function removeAttribute(el,attr){
+          if(el && el.hasAttribute(attr))
+            el.removeAttribute(attr)
+        }
+        function setAttribute(el,attr){
+          if(el && !el.hasAttribute(attr))
+            el.setAttribute(attr,"true")
+        }
+        function deleteItem(itm){
+            itm.setDeleted()
+        }
+        function updateIndex(){
+          const now = (new Date()).getTime()
+          if(now-lastUpdatedContent>1000){
+            playlist.forEach((itm,index)=>{
+              const tag = $("li"+ index)
+              removeAttribute(tag,dAplaying)
+              if(player.currentSrc==itm.audio){
+                setAttribute(tag,dAplaying)
+                playingIndex=index
+                base.si("playingIndex", playingIndex)
+                playingItem=itm
+                document.title=itm.title
+              }
+            })
+          }
+        }
+        let lastUpdatedContent=(new Date()).getTime()
+        function updateContent(tag){
+          const now = (new Date()).getTime()
+          if(now-lastUpdatedContent>1000){
+            cl("updateContent",now,lastUpdatedContent,now-lastUpdatedContent)
+            lastUpdatedContent=now
+            if(tag)
+              tag.innerHTML=getEpisodeContent(playingItem)
+          }
+        }
+        player.ontimeupdate=()=>{
+          base.si(player.currentSrc + "_currentTime", player.currentTime);
+          base.si(player.currentSrc + "_duration", player.duration);
+          base.si("currentSrc",player.currentSrc)
+          base.si("playbackRate",player.playbackRate)
+          updateIndex()
+          const tag = $("li"+ playingIndex)
+          if (playingItem) {
+            playingItem.currentTime = player.currentTime;
+            playingItem.duration = player.duration
+            updateContent(tag)
+            base.si("playingItem",playingItem)
+          }
+
+          if(player.currentTime>player.duration-.5){
+            setAttribute(tag,dAdeleted)
+            deleteItem(playingItem)
+            playAudio(playingIndex+1)
+          }
+        }
+        
+        async function fetchPodcasts() {
+          const savedFeedlist = base.gi("feedlist")
+          
+          let tempFeedlist;
+          if(savedFeedlist && savedFeedlist.length>0){
+            tempFeedlist = savedFeedlist
+          } else {
+            const response = await fetch(base.baseUrl+'fetch_feeds.php');
+            tempFeedlist = await response.json();
+          }
+          feedlist = tempFeedlist.map((itm)=>
+            new Feed(itm)
+          )
+          feedlist.forEach(feed=>feed.fetchFeed())
+          base.si("feedlist",feedlist)
+          
+          displayFeedlist()
+          cl("fetchPodcasts-5")
+          sortPlaylistTimed()
+          if(playingItem){
+            loadItem(playingItem)
+          }
+        }
+        let lastSort=0
+        function sortPlaylist() {
+          const sortOption = sort.value;
+          base.si("sortOption",sortOption)
+          playlist.sort((a, b) => {
+            switch (sortOption) {
+              case "title_asc":
+                return a.title.localeCompare(b.title);
+              case "title_desc":
+                return b.title.localeCompare(a.title);
+              case "date_desc":
+                return b.date - a.date; // Nyaste först
+              case "date_asc":
+                return a.date - b.date; // Äldsta först
+              case "duration_desc":
+                return b.duration - a.duration;
+              case "duration_asc":
+                return a.duration - b.duration;
+              default:
+                return 0;
+            }
+          });
+          displayPlaylist();
+        }
+        function displaySort() {
+          let ops = {
+            "date_desc":"Nyast",
+            "date_asc":"Äldst",
+            "title_asc":"Titel (A–Ö)",
+            "title_desc":"Titel (Ö–A)",
+            "duration_asc":"Kortast",
+            "duration_desc":"Längst"
+            
+          }
+            sort.onchange=sortPlaylist
+            sort.innerHTML=""
+            Object.keys(ops).forEach((ep) => {
+              const opt = document.createElement("option");
+              opt.text = ops[ep]
+              opt.value = ep
+              opt.selected = (ep == base.gi("sortOption"))?"selected":""
+              sort.appendChild(opt)
+            });
+        }
+        function displayFeedlist() {
+          
+          const savedIndex = base.gi("feedIndex")
+          feedlistEl.onchange = (el) => fetchFeedByIndex(feedlistEl.selectedIndex-2);
+          feedlistEl.innerHTML = "<option>alla</option><option>40 nyaste</option>";
+          feedlist.forEach((ep, index) => {
+            const opt = document.createElement("option");
+            opt.text = ep.title
+            opt.value = index
+            opt.selected = (index == savedIndex)?"selected":""
+            feedlistEl.appendChild(opt)
+          });
+          if(savedIndex){
+            fetchFeedByIndex(savedIndex)
+          }
+          
+        }
+        function formatDate(d){
+          let month = '' + (d.getMonth() + 1)
+          let day = '' + d.getDate()
+          let year = d.getFullYear()
+          
+          if (month.length < 2) 
+            month = '0' + month;
+          if (day.length < 2) 
+            day = '0' + day;
+            
+          return year+"-"+month+"-"+day
+        }
+        function maxLength(txt,len=200){
+          return (""+txt).substring(0,len)
+        }
+        function getEpisodeContent(ep){
+          let content = "<div class='fullwidth' style='height:60px;border-bottom:solid 1px #ddd;'>"
+          content+="<div class='quarterwidth' style='background: url("+ep.image+") no-repeat; background-size:60px;'>&nbsp;</div>"
+          content+="<div class='halfwidth'>" + formatDate(new Date(ep.date)) +"<br/>"+ maxLength(ep.title) + "<br/></div>"
+          content+="<div class='quarterwidth bigtext'><br/>"
+          content+=ep.getDurPer()
+          content+="</div></div>"
+          return content
+        }
+        function displayPlaylist() {
+          
+          cl("displayPlaylist",playlist)
+          playlistEl.innerHTML = "";
+          playlist.forEach((ep, index) => {
+            if(!ep.deleted){
+              const li = document.createElement("li");
+              li.id = "li"+index
+              li.innerHTML = getEpisodeContent(ep)
+              li.onclick = () => {playAudio(index)}
+              li.oncontextmenu = ()=>{
+                setAttribute(li,dAdeleted)
+                deleteItem(ep)
+              }
+              playlistEl.appendChild(li);
+            }
+          });
+          
+          adjustPlaylistHeight()
+        }
+        
+        function fetchFeedByIndex(index) {
+          
+          base.si("feedIndex",index)
+          if(index>=0) {
+            let feed = feedlist[index]
+            if(feed.getUndeletedItems){
+              playlist.replace(feed.getUndeletedItems())
+            }else{
+              playlist.replace(feed.list)
+            }
+          } else {
+            let hum = feedlist.map(feed=>feed.list).flat().filter(itm=>!base.isDeleted(itm)).map(itm=>new Item(itm))
+            
+            playlist.replace(hum)
+          }
+          
+          if(index==-1) {
+            sort.selectedIndex=1
+            sortPlaylist();
+            playlist.last(40)
+          }
+          sortPlaylistTimed();
+        }
+        
+        function playAudio(index) {
+          playingIndex = index
+          base.si("playingIndex",playingIndex)
+          const item = playlist[index];
+          if(item?.deleted && index<playlist.length){
+            go(1)
+          }else{
+            playItem(item)
+          }
+        }
+        
+        function playItem(itm){
+          loadItem(itm)
+          player.play()
+        }
+        
+        function loadItem(itm){
+          playingItem=itm
+          base.si("playingItem",playingItem)
+          player.src=itm.audio
+          player.currentTime=itm.currentTime||0
+          const savedIndex = base.gi("playingIndex")
+          if(savedIndex){
+            const tag = $("li"+ savedIndex)
+            tag?.scrollIntoView()
+          }
+        }
+        let sleepTimeoutId=-1
+        const stopPlaying=()=>{
+          sleep.selectedIndex=0
+          player.pause()
+        }
+        function displaySleep(){
+          
+          sleep.innerHTML = "<option>av</option>";
+          sleep.onchange=()=>{
+            clearTimeout(sleepTimeoutId)
+            const val = sleep.val
+            if(!val || isNaN(eval(val))){
+              return
+            }
+            sleepTimeoutId=setTimeout(stopPlaying,val)
+          }
+          for(let t=15;t<100;t=t+15){
+            const opt = document.createElement("option");
+            opt.text = t + " min"
+            opt.value = t*60000
+            sleep.appendChild(opt)
+          }
+        }
+        
+        let asdf={}
+        function loggingAspectA(...args) {
+          //asdf[this+args]=(asdf[this+args]||0)+1
+          asdf[this]=(asdf[this]||0)+1
+        }
+        function loggingAspectB(...args) {
+          //asdf[this+args]=(asdf[this+args]||0)+1
+          asdf[this]=(asdf[this]||0)+1
+          //console.log(this+"_"+args)
+        }
+        
+        window.onload=()=>{
+          displaySort()
+          displaySleep()
+          setTimeout(fetchPodcasts,50)
+        }
+    </script>
+    <script type="module">
+    import aop from "./aop.js"
+    //aop.inject(playlist,aspectPlaylist,"after","methods")
+    
+    //aop.inject(console,loggingAspectB,"before","methods")
+   
+    //aop.getMethods(localStorage).forEach(m=>{alert(m)})
+    //aop.inject(localStorage,loggingAspectB,"before","methods")
+    //aop.inject(localStorage,loggingAspectA,"after","methods")
+   
+    </script>
+    
+</body>
+</html>
