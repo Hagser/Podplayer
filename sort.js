@@ -1,6 +1,6 @@
 class Sort extends Base {
-  #sortPlaylistTimerId=-1;
-  constructor (sortEl, playlist) {
+  #sortPlaylistTimerId = -1;
+  constructor(sortEl, playlist) {
     super(sortEl);
     //this.sortPlaylistTimerId=-1;
     this.playlist = playlist;
@@ -17,18 +17,19 @@ class Sort extends Base {
 
   sortPlaylistTimed() {
     clearTimeout(this.#sortPlaylistTimerId);
-    this.#sortPlaylistTimerId = setTimeout(()=> {
-      this.sortPlaylist()}, 500);
+    this.#sortPlaylistTimerId = setTimeout(() => {
+      this.sortPlaylist()
+    }, 500);
   }
   sortPlaylist(option = undefined) {
-    const sortOption = option?? this.element.value;
-    Base.sd({sortOption});
+    const sortOption = option ?? this.element.value;
+    Base.sd({ sortOption });
     Base.sortList(this.playlist, sortOption);
     Base.disp(Base.events.displayPlaylist);
   }
 
   display() {
-    return new Promise((resolve, reject)=> {
+    return new Promise((resolve, reject) => {
       try {
         const sortOption = Base.gi(Base.dataKeys.sortOption);
 
@@ -52,7 +53,7 @@ class Sort extends Base {
     window.addEventListener(Base.events.replacedPlaylist, (e) => {
       this.sortPlaylistTimed();
     });
-    this.element.addEventListener("change", (el)=> {
+    this.element.addEventListener("change", (el) => {
       this.sortPlaylist(el.srcElement.value)
     });
   }

@@ -22,7 +22,7 @@ function replaceMethod(target, methodName, aspect, advice) {
 
 const aop = {
   //Main method exported: inject the aspect on our target when and where we need to
-  inject: function(target, aspect, advice, pointcut, method = null) {
+  inject: function (target, aspect, advice, pointcut, method = null) {
     if (method != null) {
       replaceMethod(target, method, aspect, advice)
     } else if (pointcut == "methods") {

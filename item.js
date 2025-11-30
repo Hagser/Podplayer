@@ -1,5 +1,5 @@
 class Item extends Base {
-  constructor (itm) {
+  constructor(itm) {
     super("item");
     this.index = itm.index;
     this.title = itm.title;
@@ -19,19 +19,19 @@ class Item extends Base {
     this.init();
   }
 
-  static deleteItem(el){
+  static deleteItem(el) {
     //cl("deleteItem",itemId.id);
-    Base.disp(Base.events.deleteItem,{itemId:el.id})
-    Base.disp(Base.events.hideDeleteItem,{itemId:el.id});
+    Base.disp(Base.events.deleteItem, { itemId: el.id })
+    Base.disp(Base.events.hideDeleteItem, { itemId: el.id });
   }
-  static addToList(el){
+  static addToList(el) {
     //cl("addToList",itemId.id);
-    Base.disp(Base.events.addToList,{itemId:el.id});
-    Base.disp(Base.events.hideAddToList,{itemId:el.id});
+    Base.disp(Base.events.addToList, { itemId: el.id });
+    Base.disp(Base.events.hideAddToList, { itemId: el.id });
   }
   scrollIntoView() {
-    if(this.index){
-      //Base.disp(Base.events.scrollIndexIntoView,{index:this.index});
+    if (this.index) {
+      Base.disp(Base.events.scrollIndexIntoView,{index:this.index});
     }
   }
 
@@ -47,12 +47,12 @@ class Item extends Base {
     Base.si(this.audio + "_deleted", true);
     this.setState(Base.itemStates.deleted);
   }
-  
+
   setStream() {
     this.stream = true;
     Base.si(this.audio + "_stream", true);
   }
-  
+
   removeAttribute(el, ...attributes) {
     attributes.forEach(attr => {
       if (el && el.hasAttribute(attr))
@@ -74,12 +74,12 @@ class Item extends Base {
   get durationPercentage() {
     try {
       if (this.currentTime && this.duration && this.currentTime > 0 && this.duration > 0)
-        return Math.round((this.currentTime/this.duration)*100)+"%";
+        return Math.round((this.currentTime / this.duration) * 100) + "%";
     }
-    catch {}
+    catch { }
     return "&nbsp;";
   }
-  
+
   formatDate(d) {
     let year = d.getFullYear();
     let month = '' + (d.getMonth() + 1);
@@ -90,22 +90,22 @@ class Item extends Base {
     if (day.length < 2)
       day = '0' + day;
 
-    return year+"-"+month+"-"+day;
+    return year + "-" + month + "-" + day;
   }
-  
+
   get episodeContent() {
     let content = "<div class='fullwidth item'>";
-    
-    const image = "<div class='quarterwidth' style='background: url("+this.image+") no-repeat; background-size:60px;'>&nbsp;</div>";
-    const dateAndText = "<div class='halfwidth'>" + this.formatDate(new Date(this.date)) +"<br/>"+ this.maxLength(this.title, 100) + "<br/></div>";
-    const duration = "<div class='quarterwidth bigtext'><br/>"+this.durationPercentage +"</div>";
+
+    const image = "<div class='quarterwidth' style='background: url(" + this.image + ") no-repeat; background-size:60px;'>&nbsp;</div>";
+    const dateAndText = "<div class='halfwidth'>" + this.formatDate(new Date(this.date)) + "<br/>" + this.maxLength(this.title, 100) + "<br/></div>";
+    const duration = "<div class='quarterwidth bigtext'><br/>" + this.durationPercentage + "</div>";
 
     if (this.showDeleteItem) {
       //content += image;
       //content += dateAndText;
-      content += "<div class='fullwidth bigtext deleteItem' onclick='Item.deleteItem("+this.element.id+")'><br/>del</div>";
+      content += "<div class='fullwidth bigtext deleteItem' onclick='Item.deleteItem(" + this.element.id + ")'><br/>del</div>";
     } else if (this.showAddToList) {
-      content += "<div class='fullwidth bigtext addToList' onclick='Item.addToList("+this.element.id+")'><br/>add</div>";
+      content += "<div class='fullwidth bigtext addToList' onclick='Item.addToList(" + this.element.id + ")'><br/>add</div>";
       //content += dateAndText;
       //content += duration;
     } else {
@@ -118,32 +118,32 @@ class Item extends Base {
   }
 
   maxLength(txt, len = 200) {
-    return (""+txt).substring(0, len);
+    return ("" + txt).substring(0, len);
   }
-  
+
   get played() {
     return this.currentTime > 0;
   }
-  
+
   mapTouch(touches) {
     //cl("mapTouch",touches);
     if (touches && touches.length) {
       const t = touches[0];
-      return {x:t.screenX,y:t.screenY,n:(new Date()).getTime()};
+      return { x: t.screenX, y: t.screenY, n: (new Date()).getTime() };
     }
-    return {x:-1,y:-1};
+    return { x: -1, y: -1 };
   }
 
   getDiff(start, end) {
-    const xDiff=start.x-end.x;
-    const yDiff=Math.abs(start.y-end.y);
-    const age = (Base.now()-start.n);
-    const isDel=yDiff<50 && xDiff>20;
-    const isAdd=yDiff<50 && xDiff<-20;
+    const xDiff = start.x - end.x;
+    const yDiff = Math.abs(start.y - end.y);
+    const age = (Base.now() - start.n);
+    const isDel = yDiff < 50 && xDiff > 20;
+    const isAdd = yDiff < 50 && xDiff < -20;
     return {
-      showDelete:isDel,
-      showAdd:isAdd,
-      age:age
+      showDelete: isDel,
+      showAdd: isAdd,
+      age: age
     }
   }
   drag(e, ev, li) {
@@ -167,86 +167,81 @@ class Item extends Base {
       }
     }
   }
-  
+
   init() {
-    Base.createSetMethods(this, "currentTime,duration,element,state,playbackRate".split(","), ()=> {
-      this.updateContent()})
-    .then(()=> {
-      if (this.deleted) {
-        this.setDeleted();
-      } else if (this.played) {
-        this.setState(Base.itemStates.played);
-      }
-    });
+    Base.createSetMethods(this, "currentTime,duration,element,state,playbackRate".split(","), () => {
+      this.updateContent()
+    })
+      .then(() => {
+        if (this.deleted) {
+          this.setDeleted();
+        } else if (this.played) {
+          this.setState(Base.itemStates.played);
+        }
+      });
 
     if (Base.gi(Base.dataKeys.currentSrc) == this.audio) {
       Base.disp(Base.events.playingItemUpdated, {
         playingItem: this
       });
     }
-    window.addEventListener(Base.events.showDeleteItem, (e)=> {
+    window.addEventListener(Base.events.showDeleteItem, (e) => {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
-        //cl("showDeleteItem",e.detail)
         this.showDeleteItem = true;
         this.showAddToList = false;
         this.updateContent();
-        setTimeout(()=>{
-          Base.disp(Base.events.hideDeleteItem,e.detail);
-        },1500);
+        setTimeout(() => {
+          Base.disp(Base.events.hideDeleteItem, e.detail);
+        }, 1500);
       }
     });
-    window.addEventListener(Base.events.showAddToList, (e)=> {
-        const itemId = e.detail.itemId;
-        if (this.element?.id == itemId) {
-          //cl("showAddToList",e.detail);
-          this.showAddToList = true;
-          this.showDeleteItem = false;
-          this.updateContent();
-          setTimeout(()=>{
-            Base.disp(Base.events.hideAddToList,e.detail);
-          },1500);
-        }
-      });
-    window.addEventListener(Base.events.addToList, (e)=> {
+    window.addEventListener(Base.events.showAddToList, (e) => {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
-        //cl("addToList",e.detail);
+        this.showAddToList = true;
+        this.showDeleteItem = false;
+        this.updateContent();
+        setTimeout(() => {
+          Base.disp(Base.events.hideAddToList, e.detail);
+        }, 1500);
+      }
+    });
+    window.addEventListener(Base.events.addToList, (e) => {
+      const itemId = e.detail.itemId;
+      if (this.element?.id == itemId) {
         this.setStream();
       }
     });
-    window.addEventListener(Base.events.hideDeleteItem, (e)=> {
+    window.addEventListener(Base.events.hideDeleteItem, (e) => {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
-        //cl("hideDeleteItem",e.detail)
         this.showDeleteItem = false;
         this.updateContent();
       }
     });
-    window.addEventListener(Base.events.deleteItem, (e)=> {
+    window.addEventListener(Base.events.deleteItem, (e) => {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
-        //cl("Event deleteItem",e.detail)
         this.setDeleted();
         this.updateContent();
       }
     });
-    window.addEventListener(Base.events.hideAddToList, (e)=> {
-        const itemId = e.detail.itemId;
-        if (this.element?.id == itemId) {
-          //cl("hideAddToList",e.detail)
-          this.showAddToList = false;
-          this.updateContent();
-        }
+    window.addEventListener(Base.events.hideAddToList, (e) => {
+      const itemId = e.detail.itemId;
+      if (this.element?.id == itemId) {
+        this.showAddToList = false;
+        this.updateContent();
+      }
     });
     window.addEventListener(Base.events.playingIndexUpdated, (e) => {
-        if (this.index != null && this.index == e.detail.playingIndex) {
-          this.setState(Base.itemStates.playing);
-        } else if (this.deleted) {
-          this.setDeleted();
-        } else if (this.played) {
-          this.setState(Base.itemStates.played);
-        }
+      if (this.index != null && this.index == e.detail.playingIndex) {
+        this.setState(Base.itemStates.playing);
+      } else if (this.deleted) {
+        this.setDeleted();
+      } else if (this.played) {
+        this.setState(Base.itemStates.played);
+      }
     });
   }
 }

@@ -1,5 +1,5 @@
 class Playlist extends Array {
-  constructor(playlistEl,list=[]) {
+  constructor(playlistEl, list = []) {
     super(list);
     this.element = document.getElementById(playlistEl);
     this.initPlaylist();
@@ -11,13 +11,13 @@ class Playlist extends Array {
     }
   }
   exists(itm) {
-    return this.some((ditm)=> {
+    return this.some((ditm) => {
       return ditm.audio == itm.audio;
     });
   }
   clear() {
-    return new Promise(resolve=>{
-      while (this.length > 0){
+    return new Promise(resolve => {
+      while (this.length > 0) {
         this.pop();
       }
       resolve();
@@ -25,24 +25,24 @@ class Playlist extends Array {
   }
   replace(list) {
     this.clear()
-    .then(()=>{
-      list.forEach((itm)=> {
-        this.add(new Item(itm));
+      .then(() => {
+        list.forEach((itm) => {
+          this.add(new Item(itm));
+        });
+      })
+      .then(() => {
+        this.display();
+        Base.disp(Base.events.replacedPlaylist);
       });
-    })
-    .then(()=>{
-      this.display();
-      Base.disp(Base.events.replacedPlaylist);
-    });
   }
-  createListItem(ep, index){
+  createListItem(ep, index) {
     const li = document.createElement("li");
-    li.id = "li"+index;
+    li.id = "li" + index;
     if (ep.episodeContent) {
       li.innerHTML = ep.episodeContent;
     }
     li.addEventListener("click", () => {
-      Base.disp(Base.events.loadIndex, {index});
+      Base.disp(Base.events.loadIndex, { index });
     });
     /*
     "touchstart;touchend".split(";")
@@ -55,30 +55,28 @@ class Playlist extends Array {
     return li;
   }
   display() {
-    if(!this.element){
+    if (!this.element) {
       return;
     }
     this.element.innerHTML = "";
     this.forEach((ep, index) => {
-      const li = this.createListItem(ep,index);
-      
-      ep.index=index;
-      if(ep.setElement){
+      const li = this.createListItem(ep, index);
+
+      ep.index = index;
+      if (ep.setElement) {
         ep.setElement(li);
       } else {
-        ep.element=li;
+        ep.element = li;
       }
-      
+
       this.element.appendChild(li);
     });
-    //cl(this.map(i=>{return i.index}).join(","))
 
     Base.disp(Base.events.adjustPlaylistHeight);
   }
-  initPlaylist(){
-    //cl(this instanceof StreamList)
-    window.addEventListener(Base.events.displayPlaylist,()=>{ this.display();});
-    window.addEventListener(Base.events.refreshPodcasts,()=>{ this.clear();});
+  initPlaylist() {
+    window.addEventListener(Base.events.displayPlaylist, () => { this.display(); });
+    window.addEventListener(Base.events.refreshPodcasts, () => { this.clear(); });
     window.addEventListener(Base.events.replacePlaylist, (e) => {
       this.replace(e.detail.list);
     });
