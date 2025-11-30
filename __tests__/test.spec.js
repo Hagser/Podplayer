@@ -1,1 +1,1 @@
-//No test
+test("dummy test", () => {});
