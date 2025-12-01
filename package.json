@@ -1,5 +1,5 @@
 {
-    "name": "Pod player",
+    "name": "podplayer",
     "version": "0.0.1",
     "devDependencies": {
         "jest": "29.7"
