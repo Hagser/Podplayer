@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class Sleep extends Base {
   #sleepTimeoutId = -1;
   constructor(sleepEl) {

@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class Item extends Base {
   constructor(itm) {
     super("item");
@@ -11,6 +14,7 @@ class Item extends Base {
     this.preLoadedAudio = null;
     this.showDeleteItem = false;
     this.showAddToList = false;
+    this.showMenu = false;
     this.currentTime = Base.gi(itm.audio + "_currentTime") || 0;
     this.deleted = Base.gi(itm.audio + "_deleted") === true;
     this.duration = Base.gi(itm.audio + "_duration") || 0;
@@ -19,6 +23,11 @@ class Item extends Base {
     this.init();
   }
 
+static openMenu(el) {
+    //cl("openMenu",itemId.id);
+    Base.disp(Base.events.showMenu, { itemId: el.id });
+    //Base.disp(Base.events.hideMenu, { itemId: el.id });
+  }
   static deleteItem(el) {
     //cl("deleteItem",itemId.id);
     Base.disp(Base.events.deleteItem, { itemId: el.id })
@@ -98,20 +107,21 @@ class Item extends Base {
 
     const image = "<div class='quarterwidth' style='background: url(" + this.image + ") no-repeat; background-size:60px;'>&nbsp;</div>";
     const dateAndText = "<div class='halfwidth'>" + this.formatDate(new Date(this.date)) + "<br/>" + this.maxLength(this.title, 100) + "<br/></div>";
-    const duration = "<div class='quarterwidth bigtext'><br/>" + this.durationPercentage + "</div>";
+    const duration = "<div class='eighthwidth bigtext'><br/>" + this.durationPercentage + "</div>";
+    const menu = "<div class='eighthwidth bigtext' onclick='Item.openMenu(" + this.element?.id + ")'><br/>...</div>";
 
-    if (this.showDeleteItem) {
-      //content += image;
-      //content += dateAndText;
+    if (this.showMenu) {
+      content += "<div class='halfwidth bigtext deleteItem' onclick='Item.deleteItem(" + this.element.id + ")'><br/>del</div>";
+      content += "<div class='halfwidth bigtext addToList' onclick='Item.addToList(" + this.element.id + ")'><br/>add</div>";
+    } else if (this.showDeleteItem) {
       content += "<div class='fullwidth bigtext deleteItem' onclick='Item.deleteItem(" + this.element.id + ")'><br/>del</div>";
     } else if (this.showAddToList) {
       content += "<div class='fullwidth bigtext addToList' onclick='Item.addToList(" + this.element.id + ")'><br/>add</div>";
-      //content += dateAndText;
-      //content += duration;
     } else {
       content += image;
       content += dateAndText;
       content += duration;
+      content += menu;
     }
     content += "</div>";
     return content;
@@ -196,6 +206,18 @@ class Item extends Base {
         }, 1500);
       }
     });
+    window.addEventListener(Base.events.showMenu, (e) => {
+      const itemId = e.detail.itemId;
+      if (this.element?.id == itemId) {
+        this.showDeleteItem = false;
+        this.showAddToList = false;
+        this.showMenu = true;
+        this.updateContent();
+        setTimeout(() => {
+          Base.disp(Base.events.hideMenu, e.detail);
+        }, 1500);
+      }
+    });
     window.addEventListener(Base.events.showAddToList, (e) => {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
@@ -211,6 +233,13 @@ class Item extends Base {
       const itemId = e.detail.itemId;
       if (this.element?.id == itemId) {
         this.setStream();
+      }
+    });
+    window.addEventListener(Base.events.hideMenu, (e) => {
+      const itemId = e.detail.itemId;
+      if (this.element?.id == itemId) {
+        this.showMenu = false;
+        this.updateContent();
       }
     });
     window.addEventListener(Base.events.hideDeleteItem, (e) => {

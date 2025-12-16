@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class Feed extends Base {
   static timeoutInMilliseconds = 600000;
   constructor(itm, index) {

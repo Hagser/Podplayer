@@ -1,3 +1,4 @@
+export default
 class Base {
   static baseUrl = "https://pod.hagser.se/";
   constructor(from) {
@@ -28,7 +29,9 @@ class Base {
     addToList: "addToList",
     scrollItemIntoView: "scrollItemIntoView",
     scrollIndexIntoView: "scrollIndexIntoView",
-    scrollPlayingItemIntoView: "scrollPlayingItemIntoView"
+    scrollPlayingItemIntoView: "scrollPlayingItemIntoView",
+    hideMenu: "hideMenu",
+    showMenu: "showMenu"
   });
   static dataKeys = Object.freeze({
     playingIndex: "playingIndex",
@@ -176,5 +179,8 @@ class Base {
       }
     });
     return list;
+  }
+  static cl(...args) {
+    console.log(...args);
   }
 }

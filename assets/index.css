@@ -1,3 +1,11 @@
+
+html {
+    box-sizing: border-box;
+}
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
 * {
   background-color: #111;
   color: #bbb;
@@ -89,6 +97,14 @@ input {
 
 .quarterwidth {
   width: 24.5%;
+}
+
+.eighthwidth {
+  width: 12%;
+}
+
+.sixtteenthwidth {
+  width: 6%;
 }
 
 .controls {

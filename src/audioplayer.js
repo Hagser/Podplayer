@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class AudioPlayer extends Base {
   static skipSeconds = 20;
   constructor(playerEl, playlist) {
@@ -6,6 +9,10 @@ class AudioPlayer extends Base {
     this.playingIndex = Base.gi(Base.dataKeys.playingIndex) || -1;
     this.playingItem = Base.gi(Base.dataKeys.playingItem);
     this.playbackRate = Base.gi(Base.dataKeys.playbackRate) || 1;
+    this.goPrev = Base.getElementById("goPrev");
+    this.skipPrev = Base.getElementById("skipPrev");
+    this.goNext = Base.getElementById("goNext");
+    this.skipNext = Base.getElementById("skipNext");
     this.initAudioPlayer();
   }
 
@@ -63,25 +70,25 @@ class AudioPlayer extends Base {
   initAudioPlayer() {
     Base.createSetMethods(this.element, "currentTime;duration;playbackRate;src".split(";"));
     Base.createSetMethods(this, "playingIndex;playingItem;playbackRate".split(";"));
-    window.addEventListener(Base.events.scrollPlayingItemIntoView, () => {
+    this.element.addEventListener(Base.events.scrollPlayingItemIntoView, () => {
       if (this.playingIndex) {
         Base.disp(Base.events.scrollIndexIntoView, { index: this.playingIndex });
       }
     })
-    window.goPrev.addEventListener("click", (e) => { this.go(-1) });
-    window.skipPrev.addEventListener("click", (e) => { this.skip(-1) });
-    window.goNext.addEventListener("click", (e) => { this.go(1) });
-    window.skipNext.addEventListener("click", (e) => { this.skip(1) });
-    window.addEventListener("touchmove", (ev) => { ev.preventDefault(); })
-    window.addEventListener(Base.events.playerPause, (e) => this.element.pause());
-    window.addEventListener(Base.events.playIndex, (e) => this.playIndex(e.detail.index));
-    window.addEventListener(Base.events.loadIndex, (e) => this.loadIndex(e.detail.index));
-    window.addEventListener(Base.events.replacePlaylist, (e) => this.loadItem(this.playingItem));
-    window.addEventListener(Base.events.refreshPodcasts, (e) => {
+    this.goPrev.addEventListener("click", (e) => { this.go(-1) });
+    this.skipPrev.addEventListener("click", (e) => { this.skip(-1) });
+    this.goNext.addEventListener("click", (e) => { this.go(1) });
+    this.skipNext.addEventListener("click", (e) => { this.skip(1) });
+    this.element.addEventListener("touchmove", (ev) => { ev.preventDefault(); })
+    this.element.addEventListener(Base.events.playerPause, (e) => this.element.pause());
+    this.element.addEventListener(Base.events.playIndex, (e) => this.playIndex(e.detail.index));
+    this.element.addEventListener(Base.events.loadIndex, (e) => this.loadIndex(e.detail.index));
+    this.element.addEventListener(Base.events.replacePlaylist, (e) => this.loadItem(this.playingItem));
+    this.element.addEventListener(Base.events.refreshPodcasts, (e) => {
       this.setPlayingIndex(-1);
       this.setPlayingItem(null);
     });
-    window.addEventListener(Base.events.playingItemUpdated, (e) => { this.setPlayingItem(e.detail.playingItem); });
+    this.element.addEventListener(Base.events.playingItemUpdated, (e) => { this.setPlayingItem(e.detail.playingItem); });
     this.element.onratechange = () => {
       this.setPlaybackRate(this.element.playbackRate);
     };

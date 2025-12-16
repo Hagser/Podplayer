@@ -1,3 +1,7 @@
+import Base from './base.js';
+import Item from './item.js';
+
+export default
 class Playlist extends Array {
   constructor(playlistEl, list = []) {
     super(list);
@@ -56,6 +60,7 @@ class Playlist extends Array {
   }
   display() {
     if (!this.element) {
+      console.warn("No playlist element found");
       return;
     }
     this.element.innerHTML = "";

@@ -1,3 +1,8 @@
+import Base from './base.js';
+import Feed from './feed.js';
+import Item from './item.js';
+
+export default
 class Feedlist extends Array {
   constructor(feedlistElement) {
     super([]);
@@ -139,6 +144,7 @@ class Feedlist extends Array {
   }
   async fetchPodcasts() {
     const savedFeedlist = Base.gi(Base.dataKeys.feedlist);
+    Base.cl(savedFeedlist)
     let tempFeedlist;
     if (savedFeedlist && savedFeedlist.length > 0) {
       tempFeedlist = savedFeedlist;

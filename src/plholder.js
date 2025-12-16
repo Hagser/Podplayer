@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class Plholder extends Base {
   constructor() {
     super("plHolder")

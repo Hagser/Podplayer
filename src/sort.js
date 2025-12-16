@@ -1,3 +1,6 @@
+import Base from './base.js';
+
+export default
 class Sort extends Base {
   #sortPlaylistTimerId = -1;
   constructor(sortEl, playlist) {
